@@ -1,6 +1,7 @@
 /**
  *
  * @file interrupts.cpp
+ * @author Jacob Gaumond
  * @author Sasisekhar Govind
  *
  */
@@ -20,7 +21,12 @@ int main(int argc, char** argv) {
 
     /******************ADD YOUR VARIABLES HERE*************************/
 
+    std::string* execution_ptr = &execution;
+    int* comp_uptime_ms_ptr;
+    *comp_uptime_ms_ptr = 0; // Clock starts counting from 0 on startup
 
+    int program_counter_register_val = 0x0000; // Verify value isn't 1
+    bool kernal_mode = true;
 
     /******************************************************************/
 
@@ -30,7 +36,13 @@ int main(int argc, char** argv) {
 
         /******************ADD YOUR SIMULATION CODE HERE*************************/
 
-
+        // IF activity is CPU, then sim_task_over_time and increment PC
+        if (activity.compare("CPU")) {
+            sim_task_over_time(execution_ptr, comp_uptime_ms_ptr, duration_intr, "CPU Burst");
+            increment_pc(&program_counter_register_val);
+        }
+        // IF activity is SYSCALL, then index vector table ...
+        // IF activity is END_IO, then ...
 
         /************************************************************************/
 
@@ -41,4 +53,25 @@ int main(int argc, char** argv) {
     write_output(execution);
 
     return 0;
+}
+
+void increment_uptime(int* comp_uptime_ms_ptr, int increment_val) {
+    *comp_uptime_ms_ptr += increment_val;
+}
+
+void sim_task_over_time(std::string* execution_output, int* comp_uptime_ms_ptr, int task_time_ms, std::string task_name) {
+    // To simulate performing a task (ex: CPU Burst) over a period of time (ms), the program's
+    // output (execution_output) is given a new entry with the value in the comp_uptime_ms_ptr
+    // pointer (computer uptime), task_time_ms (how long the task takes), and task_name (the name
+    // of the task). After execution, the value in comp_uptime_ms_ptr is updated.
+    std::string const OUTPUT_DELIMITER = ", ";
+
+    std::string output_entry = std::to_string(*comp_uptime_ms_ptr) + OUTPUT_DELIMITER + std::to_string(task_time_ms) + OUTPUT_DELIMITER + task_name + "\n";
+    *execution_output += output_entry;
+
+    increment_uptime(comp_uptime_ms_ptr, task_time_ms);
+}
+
+void increment_pc(int* pc_register) {
+    *pc_register += 1;
 }
